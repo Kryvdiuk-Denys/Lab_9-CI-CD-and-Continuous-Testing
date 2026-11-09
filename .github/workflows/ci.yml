@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build (syntax check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+
+  unit-tests:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p test-results
+      - run: npm run test:unit -- --json --outputFile=test-results/unit.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report
+          path: test-results/unit.json
+          if-no-files-found: warn
+
+  integration-tests:
+    name: Integration tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p test-results
+      - run: npm run regression -- --json --outputFile=test-results/integration.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-report
+          path: test-results/integration.json
+          if-no-files-found: warn
+
+  api-tests:
+    name: API tests
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: mkdir -p test-results
+      - run: npm run test:api -- --json --outputFile=test-results/api.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-report
+          path: test-results/api.json
+          if-no-files-found: warn
