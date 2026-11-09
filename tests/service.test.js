@@ -25,7 +25,7 @@ function createService({ stock = 10, allowed = true } = {}) {
 
 test("premium orders receive the 10% discount at the threshold", () => {
     const { service } = createService();
-    expect(service.calculateTotal(90000, 1, true)).toBe(81001);
+    expect(service.calculateTotal(90000, 1, true)).toBe(81000);
     expect(service.calculateTotal(90000, 1, false)).toBe(90000);
 });
 
